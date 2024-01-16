@@ -1,0 +1,29 @@
+# nix stuff
+.direnv/
+result
+
+# python stuff
+.venv/
+__pycache__/
+build/
+*.so
+tinygrad/
+
+# ignore downloaded model weights
+*.pth
+*.pkl
+*.pkl.json
+*.bin
+
+# ignore training data
+annotated/
+data/
+processed/
+*.mp4
+*.npz
+
+# wandb
+wandb
+
+# cached things
+cache/
