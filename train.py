@@ -20,7 +20,7 @@ WARMUP_STEPS = 1000
 WARMPUP_LR = 0.0001
 START_LR = 0.001
 END_LR = 0.0005
-STEPS = 5000
+STEPS = 10000
 
 def loss_fn(pred: Tensor, y: Tensor): return pred.sparse_categorical_crossentropy(y)
 
@@ -75,7 +75,7 @@ if __name__ == "__main__":
   Tensor.training = True
   dtypes.default_float = dtypes.float32
 
-  wandb.init(project="mrm_e2e_playground")
+  wandb.init(project="mrm_cursed_radar")
   wandb.config.update({
     "warmup_steps": WARMUP_STEPS,
     "start_lr": START_LR,
@@ -108,7 +108,7 @@ if __name__ == "__main__":
     sys.exit(0)
   signal.signal(signal.SIGINT, sigint_handler)
 
-  with Context(BEAM=0):
+  with Context(BEAM=4):
     for step in (t := trange(STEPS)):
       GlobalCounters.reset()
       new_lr = get_lr(step)

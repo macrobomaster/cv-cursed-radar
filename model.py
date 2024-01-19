@@ -21,14 +21,14 @@ class Model:
 
     if Tensor.training: return x
     else:
-      cls = x.argmax()
+      cls = x.argmax(1)
 
       # cam
-      _, c, h, w = x5.shape
-      cam = self.classifier.weight[cls] @ x5.reshape(c, h*w)
-      cam = cam.reshape(h, w)
-      cam = cam - cam.min()
-      cam = cam / cam.max()
+      bs, c, h, w = x5.shape
+      cam = self.classifier.weight[cls].unsqueeze(1) @ x5.reshape(bs, c, h*w)
+      cam = cam.reshape(bs, h, w)
+      cam_min, cam_max = cam.min((1, 2), keepdim=True), cam.max((1, 2), keepdim=True)
+      cam = (cam - cam_min) / (cam_max - cam_min)
 
       return cls, (cam * 255).cast(dtypes.uint8)
 

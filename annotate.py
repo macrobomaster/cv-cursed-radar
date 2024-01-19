@@ -1,17 +1,16 @@
 import os
-
-import cv2
 import glob
 from pathlib import Path
 
-from main import BASE_PATH
+import cv2
 
+BASE_PATH = Path(os.environ.get("BASE_PATH", "./"))
 frame_files = glob.glob(str(BASE_PATH / "preprocessed/*.png"))
 print(f"there are {len(frame_files)} frames")
 
 oframe, frame = None, None
 
-i = 0
+i = 1498
 flag = False
 while not flag and i < len(frame_files):
   print(f"annotating frame {i} of {len(frame_files)}")
