@@ -45,7 +45,7 @@
                 llvmlite
                 onnx
                 onnxconverter-common
-                onnxruntime
+                # onnxruntime
                 opencv4
                 pydot
                 tinygrad

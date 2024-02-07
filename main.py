@@ -88,7 +88,7 @@ if __name__ == "__main__":
           if x_flag: break
         if y_flag: break
     patches, xys, sizes = [], [], []
-    for scale in [224 + 64 * i for i in range(5)]:
+    for scale in [224 + 64 * i for i in range(1)]:
       scaled = image_resize(frame, width=scale)
       for patch, xy, size in sliding_window(scaled, scaled.shape[0], scaled.shape[1]):
         if patch.shape[0] != 224 or patch.shape[1] != 224: continue
@@ -110,8 +110,8 @@ if __name__ == "__main__":
       # convert to rgb
       frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
       frame2 = cv2.cvtColor(frame2, cv2.COLOR_BGR2RGB)
-      frame = np.concatenate((frame, frame2), axis=0)
-      # frame = frame[-224-50:-50, 300:224+300]
+      # frame = np.concatenate((frame, frame2), axis=0)
+      frame = frame[-224-50:-50, 300:224+300]
       patches, xys, sizes = get_patches(frame)
 
       cls, cam = pred(Tensor(patches))
@@ -130,6 +130,7 @@ if __name__ == "__main__":
           full_cam_img = np.zeros(size)
           full_cam_img[y:y+224, x:x+224] = cam_img
           full_cam_imgs.append(cv2.resize(full_cam_img, (frame.shape[1], frame.shape[0])))
+      if len(full_cam_imgs) == 0: continue
       full_cam_img = np.array(full_cam_imgs).mean(axis=0).astype(np.uint8)
       full_cam_img = cv2.GaussianBlur(full_cam_img, (11, 11), 5.0, 0)
       heatmap = cv2.applyColorMap(full_cam_img, cv2.COLORMAP_JET)
@@ -155,3 +156,4 @@ if __name__ == "__main__":
 
       key = cv2.waitKey(1)
       if key == ord("q"): break
+      time.sleep(0.02)

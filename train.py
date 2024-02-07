@@ -86,7 +86,7 @@ if __name__ == "__main__":
   model = Model()
 
   sn_state_dict = safe_load("./weights/shufflenetv2.safetensors")
-  load_state_dict(model.backbone, sn_state_dict)
+  load_state_dict(model.backbone, sn_state_dict, strict=False)
 
   # state_dict = safe_load(str(BASE_PATH / "model.safetensors"))
   # load_state_dict(model, state_dict)

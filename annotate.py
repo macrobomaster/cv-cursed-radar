@@ -10,9 +10,14 @@ print(f"there are {len(frame_files)} frames")
 
 oframe, frame = None, None
 
-i = 1498
+i = 0
 flag = False
 while not flag and i < len(frame_files):
+  # check if the file has already been annotated
+  if Path(frame_files[i]).with_suffix(".txt").exists():
+    i += 1
+    continue
+
   print(f"annotating frame {i} of {len(frame_files)}")
   frame_file = frame_files[i]
   oframe = frame = cv2.imread(frame_file)

@@ -10,9 +10,9 @@ def channel_shuffle(x: Tensor) -> Tuple[Tensor, Tensor]:
   return x[0], x[1]
 
 class ShuffleV2Block:
-  def __init__(self, inp: int, outp: int, c_mid: int, kernel_size: int, stride: int):
+  def __init__(self, inp: int, outp: int, c_mid: int, kernel_size: int, stride: int, shuffle: bool):
     assert stride in [1, 2]
-    self.stride, self.inp, self.outp, self.c_mid = stride, inp, outp, c_mid
+    self.stride, self.inp, self.outp, self.c_mid, self.shuffle = stride, inp, outp, c_mid, shuffle
     pad, out = kernel_size // 2, outp - inp
 
     # pw
@@ -25,7 +25,7 @@ class ShuffleV2Block:
     self.cv3 = Conv2d(c_mid, out, 1, 1, 0, bias=False)
     self.bn3 = BatchNorm2d(out)
 
-    if stride == 2:
+    if not self.shuffle:
       # dw
       self.cv4 = Conv2d(inp, inp, kernel_size, stride, pad, groups=inp, bias=False)
       self.bn4 = BatchNorm2d(inp)
@@ -34,12 +34,11 @@ class ShuffleV2Block:
       self.bn5 = BatchNorm2d(inp)
 
   def __call__(self, x: Tensor) -> Tensor:
-    if self.stride == 1:
+    if self.shuffle:
       x_proj, x = channel_shuffle(x)
-    elif self.stride == 2:
+    else:
       x_proj = self.bn4(self.cv4(x).float()).cast(dtypes.default_float)
       x_proj = self.bn5(self.cv5(x_proj).float()).cast(dtypes.default_float).relu()
-    else: raise Exception("Invalid stride", self.stride)
     x = self.bn1(self.cv1(x).float()).cast(dtypes.default_float).relu()
     x = self.bn2(self.cv2(x).float()).cast(dtypes.default_float)
     x = self.bn3(self.cv3(x).float()).cast(dtypes.default_float).relu()
@@ -51,12 +50,12 @@ class ShuffleNetV2:
     stage_out_channels = [24, 48, 96, 192, 1024]
 
     self.stage1 = [Conv2d(3, stage_out_channels[0], 3, 2, 1, bias=False), lambda x: x.float(), BatchNorm2d(stage_out_channels[0]), lambda x: x.cast(dtypes.default_float).relu()]
-    self.stage2 = [ShuffleV2Block(stage_out_channels[0], stage_out_channels[1], stage_out_channels[1] // 2, kernel_size=3, stride=2)]
-    self.stage2 += [ShuffleV2Block(stage_out_channels[1] // 2, stage_out_channels[1], stage_out_channels[1] // 2, 3, 1) for _ in range(stage_repeats[0] - 1)]
-    self.stage3 = [ShuffleV2Block(stage_out_channels[1], stage_out_channels[2], stage_out_channels[2] // 2, kernel_size=3, stride=2)]
-    self.stage3 += [ShuffleV2Block(stage_out_channels[2] // 2, stage_out_channels[2], stage_out_channels[2] // 2, 3, 1) for _ in range(stage_repeats[1] - 1)]
-    self.stage4 = [ShuffleV2Block(stage_out_channels[2], stage_out_channels[3], stage_out_channels[3] // 2, kernel_size=3, stride=2)]
-    self.stage4 += [ShuffleV2Block(stage_out_channels[3] // 2, stage_out_channels[3], stage_out_channels[3] // 2, 3, 1) for _ in range(stage_repeats[2] - 1)]
+    self.stage2 = [ShuffleV2Block(stage_out_channels[0], stage_out_channels[1], stage_out_channels[1] // 2, kernel_size=3, stride=2, shuffle=False)]
+    self.stage2 += [ShuffleV2Block(stage_out_channels[1] // 2, stage_out_channels[1], stage_out_channels[1] // 2, 3, 1, True) for _ in range(stage_repeats[0] - 1)]
+    self.stage3 = [ShuffleV2Block(stage_out_channels[1], stage_out_channels[2], stage_out_channels[2] // 2, kernel_size=3, stride=2, shuffle=False)]
+    self.stage3 += [ShuffleV2Block(stage_out_channels[2] // 2, stage_out_channels[2], stage_out_channels[2] // 2, 3, 1, True) for _ in range(stage_repeats[1] - 1)]
+    self.stage4 = [ShuffleV2Block(stage_out_channels[2], stage_out_channels[3], stage_out_channels[3] // 2, kernel_size=3, stride=1, shuffle=False)]
+    self.stage4 += [ShuffleV2Block(stage_out_channels[3] // 2, stage_out_channels[3], stage_out_channels[3] // 2, 3, 1, True) for _ in range(stage_repeats[2] - 1)]
     self.stage5 = [Conv2d(stage_out_channels[3], stage_out_channels[4], 1, 1, 0, bias=False), lambda x: x.float(), BatchNorm2d(1024), lambda x: x.cast(dtypes.default_float).relu()]
 
   def __call__(self, x: Tensor):
