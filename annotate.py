@@ -12,12 +12,14 @@ oframe, frame = None, None
 
 i = 0
 flag = False
+back = False
 while not flag and i < len(frame_files):
   # check if the file has already been annotated
-  if Path(frame_files[i]).with_suffix(".txt").exists():
+  if Path(frame_files[i]).with_suffix(".txt").exists() and not back:
     i += 1
     continue
 
+  back = False
   print(f"annotating frame {i} of {len(frame_files)}")
   frame_file = frame_files[i]
   oframe = frame = cv2.imread(frame_file)
@@ -88,5 +90,6 @@ while not flag and i < len(frame_files):
       break
     elif key == ord("d"):
       i -= 2
+      back = True
       break
   i += 1
