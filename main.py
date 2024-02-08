@@ -105,11 +105,11 @@ if __name__ == "__main__":
 
       ret, frame = cap.read()
       if not ret: break
-      ret, frame2 = cap2.read()
-      if not ret: break
+      # ret, frame2 = cap2.read()
+      # if not ret: break
       # convert to rgb
       frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-      frame2 = cv2.cvtColor(frame2, cv2.COLOR_BGR2RGB)
+      # frame2 = cv2.cvtColor(frame2, cv2.COLOR_BGR2RGB)
       # frame = np.concatenate((frame, frame2), axis=0)
       frame = frame[-224-50:-50, 300:224+300]
       patches, xys, sizes = get_patches(frame)
@@ -125,7 +125,7 @@ if __name__ == "__main__":
       # build heatmap
       full_cam_imgs = []
       for i, (patch, (x, y), size) in enumerate(zip(patches, xys, sizes)):
-        if cls[i] == 1:
+        if cls[i] != 0:
           cam_img = cv2.resize(cam[i].astype(np.uint8), (224, 224), 0, 0, cv2.INTER_CUBIC)
           full_cam_img = np.zeros(size)
           full_cam_img[y:y+224, x:x+224] = cam_img
@@ -145,7 +145,7 @@ if __name__ == "__main__":
         for i in range(2):
           largest = hulls[-i]
           x, y = largest.mean(axis=0)[0]
-          # x, y = smoother_x.update(x, dt), smoother_y.update(y, dt)
+          x, y = smoother_x.update(x, dt), smoother_y.update(y, dt)
           cv2.drawContours(frame, [largest], -1, (0, 255, 0), 2)
           cv2.circle(frame, (int(x), int(y)), 6, (255, 0, 255), 3)
 

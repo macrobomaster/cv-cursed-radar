@@ -7,7 +7,7 @@ class Model:
   def __init__(self):
     self.backbone = ShuffleNetV2()
 
-    self.classifier = Linear(1024, 2, bias=False)
+    self.classifier = Linear(1024, 13, bias=False)
 
   def __call__(self, img: Tensor):
     # image normalization
