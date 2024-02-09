@@ -70,9 +70,9 @@ if __name__ == "__main__":
     cls, cam  = model(img)
     return cls.realize(), cam.realize()
 
-  cap = cv2.VideoCapture("2743.mp4")
-  cap2 = cv2.VideoCapture("2744.mp4")
-  # cap = cv2.VideoCapture(1)
+  # cap = cv2.VideoCapture("2743.mp4")
+  # cap2 = cv2.VideoCapture("2744.mp4")
+  cap = cv2.VideoCapture(1)
 
   def get_patches(frame):
     def sliding_window(frame, height, width, step_size=224, window_size=224):
@@ -130,24 +130,24 @@ if __name__ == "__main__":
           full_cam_img = np.zeros(size)
           full_cam_img[y:y+224, x:x+224] = cam_img
           full_cam_imgs.append(cv2.resize(full_cam_img, (frame.shape[1], frame.shape[0])))
-      if len(full_cam_imgs) == 0: continue
-      full_cam_img = np.array(full_cam_imgs).mean(axis=0).astype(np.uint8)
-      full_cam_img = cv2.GaussianBlur(full_cam_img, (11, 11), 5.0, 0)
-      heatmap = cv2.applyColorMap(full_cam_img, cv2.COLORMAP_JET)
-      frame = np.uint8(0.6 * frame + 0.4 * heatmap)
+      if len(full_cam_imgs) != 0:
+        full_cam_img = np.array(full_cam_imgs).mean(axis=0).astype(np.uint8)
+        full_cam_img = cv2.GaussianBlur(full_cam_img, (11, 11), 5.0, 0)
+        heatmap = cv2.applyColorMap(full_cam_img, cv2.COLORMAP_JET)
+        frame = np.uint8(0.6 * frame + 0.4 * heatmap)
 
-      # contour based
-      threshold = cv2.threshold(full_cam_img, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
-      contours = cv2.findContours(threshold, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
-      hulls = list(map(cv2.convexHull, contours))
-      if len(hulls) > 0:
-        hulls = sorted(hulls, key=cv2.contourArea)
-        for i in range(2):
-          largest = hulls[-i]
-          x, y = largest.mean(axis=0)[0]
-          x, y = smoother_x.update(x, dt), smoother_y.update(y, dt)
-          cv2.drawContours(frame, [largest], -1, (0, 255, 0), 2)
-          cv2.circle(frame, (int(x), int(y)), 6, (255, 0, 255), 3)
+        # contour based
+        threshold = cv2.threshold(full_cam_img, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+        contours = cv2.findContours(threshold, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
+        hulls = list(map(cv2.convexHull, contours))
+        if len(hulls) > 0:
+          hulls = sorted(hulls, key=cv2.contourArea, reverse=True)
+          for i in range(1):
+            largest = hulls[-i]
+            x, y = largest.mean(axis=0)[0]
+            x, y = smoother_x.update(x, dt), smoother_y.update(y, dt)
+            cv2.drawContours(frame, [largest], -1, (0, 255, 0), 2)
+            cv2.circle(frame, (int(x), int(y)), 6, (255, 0, 255), 3)
 
       cv2.putText(frame, f"{1/dt:.2f} FPS", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (55, 250, 55), 1)
       cv2.putText(frame, f"{cls.sum():.3f}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (55, 250, 55), 1)
