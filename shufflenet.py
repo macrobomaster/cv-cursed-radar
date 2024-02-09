@@ -52,7 +52,7 @@ class ShuffleNetV2:
     self.stage1 = [Conv2d(3, stage_out_channels[0], 3, 2, 1, bias=False), lambda x: x.float(), BatchNorm2d(stage_out_channels[0]), lambda x: x.cast(dtypes.default_float).relu()]
     self.stage2 = [ShuffleV2Block(stage_out_channels[0], stage_out_channels[1], stage_out_channels[1] // 2, kernel_size=3, stride=2, shuffle=False)]
     self.stage2 += [ShuffleV2Block(stage_out_channels[1] // 2, stage_out_channels[1], stage_out_channels[1] // 2, 3, 1, True) for _ in range(stage_repeats[0] - 1)]
-    self.stage3 = [ShuffleV2Block(stage_out_channels[1], stage_out_channels[2], stage_out_channels[2] // 2, kernel_size=3, stride=1, shuffle=False)]
+    self.stage3 = [ShuffleV2Block(stage_out_channels[1], stage_out_channels[2], stage_out_channels[2] // 2, kernel_size=3, stride=2, shuffle=False)]
     self.stage3 += [ShuffleV2Block(stage_out_channels[2] // 2, stage_out_channels[2], stage_out_channels[2] // 2, 3, 1, True) for _ in range(stage_repeats[1] - 1)]
     self.stage4 = [ShuffleV2Block(stage_out_channels[2], stage_out_channels[3], stage_out_channels[3] // 2, kernel_size=3, stride=1, shuffle=False)]
     self.stage4 += [ShuffleV2Block(stage_out_channels[3] // 2, stage_out_channels[3], stage_out_channels[3] // 2, 3, 1, True) for _ in range(stage_repeats[2] - 1)]
