@@ -3,6 +3,10 @@ from tinygrad.nn import Linear
 
 from shufflenet import ShuffleNetV2
 
+def upsample(x: Tensor, scale: int):
+  bs, c, py, px = x.shape
+  return x.reshape(bs, c, py, 1, px, 1).expand(bs, c, py, scale, px, scale).reshape(bs, c, py * scale, px * scale)
+
 class Model:
   def __init__(self):
     self.backbone = ShuffleNetV2()
@@ -29,6 +33,8 @@ class Model:
       cam = cam.reshape(bs, h, w)
       cam_min, cam_max = cam.min((1, 2), keepdim=True), cam.max((1, 2), keepdim=True)
       cam = (cam - cam_min) / (cam_max - cam_min)
+      cam = cam * 255
+      cam = upsample(cam.unsqueeze(1), 16).squeeze(1)
 
-      return cls, (cam * 255).cast(dtypes.uint8)
+      return cls, cam
 
