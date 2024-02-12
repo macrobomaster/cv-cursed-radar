@@ -20,7 +20,7 @@ WARMUP_STEPS = 100
 WARMPUP_LR = 0.0001
 START_LR = 0.001
 END_LR = 0.0005
-STEPS = 2000
+STEPS = 4000
 
 def loss_fn(pred: Tensor, y: Tensor): return pred.sparse_categorical_crossentropy(y)
 
