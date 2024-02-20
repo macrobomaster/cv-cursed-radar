@@ -2,10 +2,9 @@ import glob, math, random, sys, signal
 import multiprocessing
 from multiprocessing import Queue, Process
 
-from tinygrad import dtypes, Tensor, GlobalCounters, Device
-from tinygrad.codegen.kernel import LinearizerOptions
-from tinygrad.jit import TinyJit
-from tinygrad.nn.optim import SGD, LAMB, AdamW
+from tinygrad import dtypes, Tensor, GlobalCounters
+from tinygrad.features.jit import TinyJit
+from tinygrad.nn.optim import SGD
 from tinygrad.nn.state import get_parameters, get_state_dict, load_state_dict, safe_load, safe_save
 from tinygrad.helpers import Context
 from tqdm import trange

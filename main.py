@@ -8,7 +8,7 @@ import numpy as np
 from tinygrad.codegen.kernel import LinearizerOptions
 from tinygrad.helpers import Context
 from tinygrad import Device, Tensor, dtypes
-from tinygrad.jit import TinyJit
+from tinygrad.features.jit import TinyJit
 from tinygrad.nn.state import safe_load, load_state_dict, get_state_dict
 from tinygrad import GlobalCounters
 
@@ -52,7 +52,7 @@ if __name__ == "__main__":
   Tensor.no_grad = True
   Tensor.training = False
   dtypes.default_float = dtypes.float16
-  Device[Device.DEFAULT].linearizer_opts = LinearizerOptions("HIP", supports_float4=False)
+  # Device[Device.DEFAULT].linearizer_opts = LinearizerOptions("HIP", supports_float4=False)
 
   model = Model()
   state_dict = safe_load(str(BASE_PATH / "model.safetensors"))
