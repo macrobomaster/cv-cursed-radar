@@ -70,7 +70,7 @@ if __name__ == "__main__":
     cls, cam  = model(img)
     return cls.realize(), cam.realize()
 
-  cap = cv2.VideoCapture("2744.mp4")
+  cap = cv2.VideoCapture("2743.mp4")
   # cap = cv2.VideoCapture(1)
 
   st = time.perf_counter()
@@ -80,7 +80,7 @@ if __name__ == "__main__":
       # frame = cap_queue.get()
 
       ret, frame = cap.read()
-      if not ret: cap.set(cv2.CAP_PROP_POS_FRAMES, 100); continue
+      if not ret: cap.set(cv2.CAP_PROP_POS_FRAMES, 0); continue
       # convert to rgb
       frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
       frame = frame[-224-50:-50, 300:224+300]
