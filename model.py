@@ -1,7 +1,7 @@
 from tinygrad import Tensor, dtypes
 from tinygrad.nn import Linear
 
-from shufflenet import ShuffleNetV2
+from backbone import Backbone
 
 def upsample(x: Tensor, scale: int):
   bs, c, py, px = x.shape
@@ -9,32 +9,27 @@ def upsample(x: Tensor, scale: int):
 
 class Model:
   def __init__(self):
-    self.backbone = ShuffleNetV2()
+    self.backbone = Backbone()
 
-    self.classifier = Linear(1024, 13, bias=False)
+    self.classifier = Linear(2048, 13, bias=False)
 
-  def __call__(self, img: Tensor):
+  def __call__(self, img: Tensor) -> Tensor:
     # image normalization
     if Tensor.training: img = img.float()
     else: img = img.cast(dtypes.default_float)
     img = img.permute(0, 3, 1, 2) / 255
 
     x = self.backbone(img)
-    x, x5 = x
     x = self.classifier(x)
+    return x
 
-    if Tensor.training: return x
-    else:
-      cls = x.argmax(1)
+if __name__ == "__main__":
+  from tinygrad.nn.state import get_parameters
+  from tinygrad import GlobalCounters
 
-      # cam
-      bs, c, h, w = x5.shape
-      cam = self.classifier.weight[cls].unsqueeze(1) @ x5.reshape(bs, c, h*w)
-      cam = cam.reshape(bs, h, w)
-      cam_min, cam_max = cam.min((1, 2), keepdim=True), cam.max((1, 2), keepdim=True)
-      cam = (cam - cam_min) / (cam_max - cam_min)
-      cam = cam * 255
-      cam = upsample(cam.unsqueeze(1), 16).squeeze(1)
+  model = Model()
+  print(f"model parameters: {sum(p.numel() for p in get_parameters(model))}")
 
-      return cls, cam
-
+  model(Tensor.zeros(1, 256, 256, 3)).realize()
+  GlobalCounters.reset()
+  model(Tensor.zeros(1, 256, 256, 3)).realize()

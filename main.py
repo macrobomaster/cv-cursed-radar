@@ -74,7 +74,7 @@ if __name__ == "__main__":
   # cap = cv2.VideoCapture(1)
 
   st = time.perf_counter()
-  with Context(BEAM=0):
+  with Context(BEAM=4, WINO=1):
     while True:
       GlobalCounters.reset()
       # frame = cap_queue.get()
